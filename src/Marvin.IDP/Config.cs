@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using IdentityServer4;
+﻿using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Marvin.IDP
 {
@@ -23,7 +20,9 @@ namespace Marvin.IDP
                     Claims = new List<Claim>
                     {
                         new Claim("given_name", "Frank"),
-                        new Claim("family_name", "Underwood")
+                        new Claim("family_name", "Underwood"),
+                        new Claim("address", "Main Road 1"),
+                        new Claim("role", "FreeUser")
                     }
                 },
                 new TestUser
@@ -34,7 +33,9 @@ namespace Marvin.IDP
                     Claims = new List<Claim>
                     {
                         new Claim("given_name", "Claire"),
-                        new Claim("family_name", "Underwood")
+                        new Claim("family_name", "Underwood"),
+                        new Claim("address", "Big Street 2"),
+                        new Claim("role", "PayingUser")
                     }
                 }
             };
@@ -45,7 +46,9 @@ namespace Marvin.IDP
             return new IdentityResource[]
             {
                 new IdentityResources.OpenId(), 
-                new IdentityResources.Profile()
+                new IdentityResources.Profile(),
+                new IdentityResources.Address(),
+                new IdentityResource("roles", "Your role(s)", new List<string>{"role"})
             };
         }
 
@@ -69,7 +72,9 @@ namespace Marvin.IDP
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Address,
+                        "roles"
                     },
                     ClientSecrets =
                     {
