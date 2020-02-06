@@ -1,16 +1,19 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using AutoMapper;
 using ImageGallery.API.Helpers;
 using ImageGallery.API.Services;
 using ImageGallery.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace ImageGallery.API.Controllers
 {
     [Route("api/images")]
+    [Authorize]
     public class ImagesController : Controller
     {
         private readonly IGalleryRepository _galleryRepository;
@@ -23,14 +26,16 @@ namespace ImageGallery.API.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [HttpGet()]
+        [HttpGet]
         public IActionResult GetImages()
         {
+            var ownerId = User.Claims.First(c => c.Type == "sub").Value;
+
             // get from repo
-            var imagesFromRepo = _galleryRepository.GetImages();
+            var imagesFromRepo = _galleryRepository.GetImages(ownerId);
 
             // map to model
-            var imagesToReturn = Mapper.Map<IEnumerable<Model.Image>>(imagesFromRepo);
+            var imagesToReturn = Mapper.Map<IEnumerable<Image>>(imagesFromRepo);
 
             // return
             return Ok(imagesToReturn);
@@ -46,12 +51,13 @@ namespace ImageGallery.API.Controllers
                 return NotFound();
             }
 
-            var imageToReturn = Mapper.Map<Model.Image>(imageFromRepo);
+            var imageToReturn = Mapper.Map<Image>(imageFromRepo);
 
             return Ok(imageToReturn);
         }
 
-        [HttpPost()]
+        [HttpPost]
+        [Authorize(Roles = "PayingUser")]
         public IActionResult CreateImage([FromBody] ImageForCreation imageForCreation)
         {
             if (imageForCreation == null)
@@ -76,7 +82,7 @@ namespace ImageGallery.API.Controllers
             var webRootPath = _hostingEnvironment.WebRootPath;
 
             // create the filename
-            string fileName = Guid.NewGuid().ToString() + ".jpg";
+            string fileName = Guid.NewGuid() + ".jpg";
             
             // the full file path
             var filePath = Path.Combine($"{webRootPath}/images/{fileName}");
@@ -89,14 +95,15 @@ namespace ImageGallery.API.Controllers
 
             // ownerId should be set - can't save image in starter solution, will
             // be fixed during the course
-            //imageEntity.OwnerId = ...;
+            var ownerId = User.Claims.First(c => c.Type == "sub").Value;
+            imageEntity.OwnerId = ownerId;
 
             // add and save.  
             _galleryRepository.AddImage(imageEntity);
 
             if (!_galleryRepository.Save())
             {
-                throw new Exception($"Adding an image failed on save.");
+                throw new Exception("Adding an image failed on save.");
             }
 
             var imageToReturn = Mapper.Map<Image>(imageEntity);

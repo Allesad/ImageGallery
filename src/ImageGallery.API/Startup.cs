@@ -1,4 +1,5 @@
-﻿using ImageGallery.API.Entities;
+﻿using IdentityServer4.AccessTokenValidation;
+using ImageGallery.API.Entities;
 using ImageGallery.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,13 @@ namespace ImageGallery.API
         public void ConfigureServices(IServiceCollection services)
         {
              services.AddMvc();
+
+             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                 .AddIdentityServerAuthentication(options =>
+                 {
+                     options.Authority = "https://localhost:5051/";
+                     options.ApiName = "imagegalleryapi";
+                 });
         
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
@@ -57,6 +65,8 @@ namespace ImageGallery.API
             }
 
             app.UseStaticFiles();
+
+            app.UseAuthentication();
 
             AutoMapper.Mapper.Initialize(cfg =>
             {

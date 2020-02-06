@@ -14,7 +14,7 @@ namespace Marvin.IDP
             {
                 new TestUser
                 {
-                    SubjectId = "d860efca-22d9-47fd-8249-791ba6107c7",
+                    SubjectId = "d860efca-22d9-47fd-8249-791ba61b07c7",
                     Username = "Frank",
                     Password = "password",
                     Claims = new List<Claim>
@@ -52,6 +52,14 @@ namespace Marvin.IDP
             };
         }
 
+        public static IEnumerable<ApiResource> GetApiResources()
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource("imagegalleryapi", "Image Gallery API", new List<string>{"role"})
+            };
+        }
+
         public static IEnumerable<Client> GetClients()
         {
             return new List<Client>
@@ -74,7 +82,8 @@ namespace Marvin.IDP
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Address,
-                        "roles"
+                        "roles",
+                        "imagegalleryapi"
                     },
                     ClientSecrets =
                     {
