@@ -74,7 +74,10 @@ namespace ImageGallery.Client.Controllers
                 
                 return View(editImageViewModel);
             }
-           
+
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+                return RedirectToAction("AccessDenied", "Authorization");
+
             throw new Exception($"A problem happened while calling the API: {response.ReasonPhrase}");
         }
 
@@ -196,7 +199,8 @@ namespace ImageGallery.Client.Controllers
             await HttpContext.SignOutAsync("oidc");
         }
 
-        [Authorize(Roles = "PayingUser")]
+        //[Authorize(Roles = "PayingUser")]
+        [Authorize("CanOrderFrame")]
         public async Task<IActionResult> OrderFrame()
         {
             var discoveryClient = new DiscoveryClient("https://localhost:5051");
